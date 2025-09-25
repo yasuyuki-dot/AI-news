@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { NewsItem } from '../types/news';
 import { storageService } from '../services/storageService';
+import { analyticsService } from '../services/analyticsService';
 
 interface NewsCardProps {
   article?: NewsItem; // 新しいプロパティ名
@@ -74,6 +75,13 @@ const NewsCard: React.FC<NewsCardProps> = ({
   };
 
   const handleClick = () => {
+    // アクセス記録
+    analyticsService.recordAccess(
+      newsItem.source,
+      newsItem.title,
+      newsItem.category
+    );
+
     window.open(newsItem.link, '_blank', 'noopener,noreferrer');
   };
 

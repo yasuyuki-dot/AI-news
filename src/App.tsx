@@ -7,9 +7,10 @@ import CategorySection from './components/CategorySection';
 import CategoryAllPage from './components/CategoryAllPage';
 import SearchPage from './components/SearchPage';
 import SavedPage from './components/SavedPage';
+import SourceRanking from './components/SourceRanking';
 import './App.css';
 
-type PageType = 'home' | 'search' | 'saved' | 'category-all';
+type PageType = 'home' | 'search' | 'saved' | 'category-all' | 'ranking';
 
 interface CategoryAllState {
   category: string;
@@ -107,6 +108,8 @@ function App() {
         return <SearchPage news={news} />;
       case 'saved':
         return <SavedPage />;
+      case 'ranking':
+        return <SourceRanking />;
       case 'category-all':
         if (!categoryAllState) return null;
         return (
@@ -184,6 +187,12 @@ function App() {
             className={`nav-btn ${currentPage === 'saved' ? 'active' : ''}`}
           >
             💾 保存記事 {savedCount > 0 && <span className="badge">{savedCount}</span>}
+          </button>
+          <button
+            onClick={() => handlePageChange('ranking')}
+            className={`nav-btn ${currentPage === 'ranking' ? 'active' : ''}`}
+          >
+            📊 ランキング
           </button>
         </nav>
 

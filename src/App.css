@@ -512,7 +512,7 @@
 /* Responsive Design for Category All */
 @media (max-width: 768px) {
   .category-all-header {
-    padding: 1.5rem 1rem;
+    padding: 1rem;
   }
 
   .category-all-title {
@@ -522,7 +522,7 @@
   }
 
   .category-all-title h1 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
   }
 
   .stats-list {
@@ -536,17 +536,101 @@
 
   .category-all-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1rem;
+    padding: 1rem;
   }
 
   .pagination {
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
+    padding: 1rem;
   }
 
   .pagination-controls {
     flex-wrap: wrap;
     justify-content: center;
+  }
+}
+
+/* 追加のモバイル最適化 */
+@media (max-width: 480px) {
+  .app {
+    overflow-x: hidden;
+  }
+
+  .app-header {
+    padding: 1rem 0.5rem;
+  }
+
+  .app-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .app-nav {
+    gap: 0.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .nav-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .app-main {
+    padding: 0.5rem;
+  }
+
+  .categories-container {
+    gap: 1.5rem;
+  }
+
+  .category-header {
+    padding: 1rem;
+  }
+
+  .category-title {
+    font-size: 1.3rem;
+  }
+
+  .news-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .news-card {
+    padding: 1rem;
+  }
+
+  .news-card-title {
+    font-size: 1rem;
+  }
+
+  .search-container {
+    padding: 1rem;
+  }
+
+  .search-input {
+    padding: 0.75rem;
+    font-size: 16px; /* iOS zoom防止 */
+  }
+
+  .saved-header {
+    padding: 1rem;
+  }
+
+  .saved-controls {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .control-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .control-group label {
+    margin-bottom: 0.25rem;
   }
 }
 

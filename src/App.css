@@ -550,6 +550,186 @@
   font-size: 0.9rem;
 }
 
+/* 表示モード切り替えコントロール */
+.display-mode-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.display-mode-control label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.virtual-scroll-badge {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* パフォーマンスコントロール */
+.performance-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.performance-control label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.performance-report-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.performance-report-btn:hover {
+  background: #218838;
+}
+
+/* 仮想化コンテナ */
+.virtualized-container {
+  margin: 2rem 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  background: white;
+}
+
+/* パフォーマンス比較 */
+.performance-comparison {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-top: 2rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  border-left: 4px solid #667eea;
+}
+
+.comparison-info h4 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.comparison-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stat-comparison {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e1e5e9;
+}
+
+.stat-label {
+  font-weight: 500;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: #667eea;
+  font-size: 0.9rem;
+}
+
+.comparison-note {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+  font-style: italic;
+  background: rgba(102, 126, 234, 0.05);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+/* コントロールレイアウトの改善 */
+.category-all-controls {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sort-control,
+.display-mode-control,
+.performance-control {
+  white-space: nowrap;
+}
+
+/* チェックボックスのスタイル改善 */
+.display-mode-control input[type="checkbox"],
+.performance-control input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e1e5e9;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.display-mode-control input[type="checkbox"]:checked,
+.performance-control input[type="checkbox"]:checked {
+  background: #667eea;
+  border-color: #667eea;
+}
+
+.display-mode-control input[type="checkbox"]:checked::after,
+.performance-control input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.display-mode-control input[type="checkbox"]:hover,
+.performance-control input[type="checkbox"]:hover {
+  border-color: #667eea;
+}
+
 /* Responsive Design for Category All */
 @media (max-width: 768px) {
   .category-all-header {
@@ -573,6 +753,18 @@
   .category-all-controls {
     flex-direction: column;
     align-items: stretch;
+    gap: 1rem;
+  }
+
+  .display-mode-control,
+  .performance-control {
+    justify-content: center;
+  }
+
+  .virtual-scroll-badge,
+  .performance-report-btn {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
   }
 
   .category-all-grid {
@@ -590,6 +782,19 @@
   .pagination-controls {
     flex-wrap: wrap;
     justify-content: center;
+  }
+
+  .performance-comparison {
+    padding: 1rem;
+  }
+
+  .comparison-stats {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .stat-comparison {
+    padding: 0.5rem;
   }
 }
 

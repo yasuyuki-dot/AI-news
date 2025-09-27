@@ -1,0 +1,387 @@
+/* VirtualizedNewsList コンポーネント */
+.virtualized-news-container {
+  position: relative;
+  height: 100%;
+  background: transparent;
+}
+
+.virtualized-scroll-container {
+  width: 100%;
+  outline: none;
+  background: transparent;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(102, 126, 234, 0.5) transparent;
+}
+
+/* Webkit スクロールバーのカスタマイズ */
+.virtualized-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.virtualized-scroll-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.virtualized-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.5);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.virtualized-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.7);
+}
+
+.virtualized-scroll-container.scrolling::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.8);
+}
+
+/* 仮想アイテム */
+.virtualized-item {
+  padding: 0.5rem;
+  will-change: transform;
+  contain: layout;
+}
+
+/* スクロール進捗インジケーター */
+.scroll-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 0 3px 3px 0;
+  transition: width 0.1s ease-out;
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(102, 126, 234, 0.3);
+}
+
+/* パフォーマンスメトリクス */
+.performance-metrics {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-family: 'Monaco', 'Cascadia Code', monospace;
+  z-index: 20;
+  backdrop-filter: blur(10px);
+  min-width: 120px;
+}
+
+.performance-metrics .metric {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.performance-metrics .metric:last-child {
+  margin-bottom: 0;
+}
+
+.performance-metrics .metric span:first-child {
+  color: #ccc;
+  margin-right: 0.5rem;
+}
+
+/* エラー状態 */
+.virtualized-news-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.error-content {
+  text-align: center;
+  color: #dc3545;
+}
+
+.error-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.error-content p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+/* 空状態 */
+.virtualized-news-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.empty-content {
+  text-align: center;
+  color: #666;
+  max-width: 300px;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.empty-content h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.empty-content p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* ローディング状態 */
+.virtualized-loading {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  backdrop-filter: blur(10px);
+  z-index: 15;
+}
+
+.load-more-indicator {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  backdrop-filter: blur(10px);
+  z-index: 15;
+}
+
+.loading-spinner {
+  font-size: 1.5rem;
+  animation: spin 1s linear infinite;
+  margin-bottom: 0.5rem;
+}
+
+.virtualized-loading p,
+.load-more-indicator p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.load-more-indicator p {
+  color: #667eea;
+}
+
+/* アイテム数表示 */
+.item-count {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  backdrop-filter: blur(10px);
+  z-index: 15;
+}
+
+/* スクロール中の視覚効果 */
+.virtualized-scroll-container.scrolling .virtualized-item {
+  transition: none;
+}
+
+.virtualized-scroll-container:not(.scrolling) .virtualized-item {
+  transition: transform 0.1s ease-out;
+}
+
+/* スムーズスクロール効果 */
+.virtualized-scroll-container {
+  scroll-behavior: smooth;
+}
+
+/* アクセシビリティ */
+.virtualized-scroll-container:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* 高コントラストモード */
+@media (prefers-contrast: high) {
+  .performance-metrics {
+    background: black;
+    border: 2px solid white;
+  }
+
+  .scroll-progress {
+    background: #000;
+  }
+
+  .item-count {
+    background: black;
+    border: 1px solid white;
+  }
+}
+
+/* プリント時の最適化 */
+@media print {
+  .performance-metrics,
+  .scroll-progress,
+  .item-count {
+    display: none;
+  }
+
+  .virtualized-scroll-container {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .virtualized-item {
+    position: static !important;
+    page-break-inside: avoid;
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .virtualized-item {
+    padding: 0.25rem;
+  }
+
+  .performance-metrics {
+    top: 5px;
+    right: 5px;
+    font-size: 0.7rem;
+    padding: 0.4rem;
+    min-width: 100px;
+  }
+
+  .empty-content h3 {
+    font-size: 1.1rem;
+  }
+
+  .empty-content p {
+    font-size: 0.9rem;
+  }
+
+  .virtualized-loading,
+  .load-more-indicator {
+    bottom: 10px;
+    padding: 0.75rem 1rem;
+  }
+
+  .virtualized-loading p,
+  .load-more-indicator p {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .virtualized-item {
+    padding: 0.125rem;
+  }
+
+  .performance-metrics {
+    position: fixed;
+    top: auto;
+    bottom: 60px;
+    right: 5px;
+    font-size: 0.65rem;
+    padding: 0.3rem;
+    min-width: 90px;
+  }
+
+  .scroll-progress {
+    height: 2px;
+  }
+
+  .item-count {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+/* アニメーション */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* フェードイン効果 */
+.virtualized-item {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* パフォーマンス最適化 */
+.virtualized-scroll-container {
+  contain: layout style paint;
+  overflow-anchor: none;
+}
+
+.virtualized-item {
+  contain: layout;
+  transform: translateZ(0); /* ハードウェアアクセラレーション */
+}
+
+/* ダークモード対応（将来のため） */
+@media (prefers-color-scheme: dark) {
+  .virtualized-news-empty,
+  .virtualized-news-error {
+    background: #2d3748;
+    color: #e2e8f0;
+  }
+
+  .empty-content h3,
+  .error-content p {
+    color: #e2e8f0;
+  }
+
+  .empty-content p {
+    color: #a0aec0;
+  }
+
+  .virtualized-loading {
+    background: rgba(45, 55, 72, 0.95);
+    color: #e2e8f0;
+  }
+
+  .virtualized-loading p {
+    color: #a0aec0;
+  }
+}

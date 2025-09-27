@@ -61,7 +61,7 @@ const SourceRanking: React.FC<SourceRankingProps> = ({ onClose }) => {
       if (diffDays < 7) return `${diffDays}日前`;
 
       return date.toLocaleDateString('ja-JP');
-    } catch (error) {
+    } catch {
       return timestamp;
     }
   };

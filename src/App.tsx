@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import type { NewsItem } from './types/news';
 import { NEWS_SOURCES } from './types/news';
 import { rssService } from './services/rssService';
+import { realtimeService, type RealtimeEvent } from './services/realtimeService';
 import { filterRecentNews, getDateRangeText } from './utils/dateFilter';
 import CategorySection from './components/CategorySection';
 import CategoryAllPage from './components/CategoryAllPage';
 import SearchPage from './components/SearchPage';
 import SavedPage from './components/SavedPage';
 import SourceRanking from './components/SourceRanking';
+import RealtimeStatus from './components/RealtimeStatus';
 import './App.css';
 
 type PageType = 'home' | 'search' | 'saved' | 'category-all' | 'ranking';
@@ -23,6 +25,7 @@ function App() {
   const [error, setError] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<PageType>('home');
   const [categoryAllState, setCategoryAllState] = useState<CategoryAllState | null>(null);
+  const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
 
   // カテゴリ設定
   const categories = [
@@ -34,14 +37,23 @@ function App() {
   useEffect(() => {
     loadNews();
 
-    // 10分間隔で自動更新
-    const interval = setInterval(() => {
-      if (currentPage === 'home') {
-        loadNews();
+    // リアルタイムサービスのイベントリスナー設定
+    const handleRealtimeEvent = (event: RealtimeEvent) => {
+      if (event.type === 'news_update' && Array.isArray(event.data)) {
+        console.log('Realtime news update received:', event.data.length, 'items');
+        const recentNews = filterRecentNews(event.data);
+        setNews(recentNews.length > 0 ? recentNews : event.data.slice(0, 20));
+        setLoading(false);
+        setError('');
       }
-    }, 10 * 60 * 1000); // 10分 = 600,000ミリ秒
+    };
 
-    return () => clearInterval(interval);
+    realtimeService.subscribe('app-main', handleRealtimeEvent);
+
+    // 従来の10分間隔更新は削除（リアルタイムサービスに置き換え）
+    return () => {
+      realtimeService.unsubscribe('app-main');
+    };
   }, [currentPage]);
 
   const loadNews = async () => {
@@ -90,13 +102,17 @@ function App() {
 
 
   const handleRefresh = () => {
-    loadNews();
+    if (isRealtimeConnected) {
+      // リアルタイム接続中は手動更新を実行
+      realtimeService.triggerManualUpdate();
+    } else {
+      // リアルタイム未接続時は従来の更新方法
+      loadNews();
+    }
   };
 
   const handlePageChange = (page: PageType) => {
     setCurrentPage(page);
-    if (page === 'saved') {
-      }
     if (page !== 'category-all') {
       setCategoryAllState(null);
     }
@@ -230,7 +246,9 @@ function App() {
             <div className="news-stats">
               {!loading && <span>総計: {getTotalNewsCount()}件</span>}
               <span className="date-filter-info">📅 過去2週間以内 ({getDateRangeText()})</span>
-              <span className="auto-refresh-info">🔄 10分間隔で自動更新</span>
+              {!isRealtimeConnected && (
+                <span className="auto-refresh-info">🔄 手動更新モード</span>
+              )}
             </div>
             <button onClick={handleRefresh} className="refresh-btn" disabled={loading}>
               {loading ? '🔄 更新中...' : '🔄 更新'}
@@ -240,6 +258,9 @@ function App() {
       </header>
 
       <main className="app-main">
+        {currentPage === 'home' && (
+          <RealtimeStatus onStatusChange={setIsRealtimeConnected} />
+        )}
         {renderPage()}
       </main>
     </div>

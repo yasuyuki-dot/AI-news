@@ -306,7 +306,7 @@ class TranslationService {
       });
 
       return finalTranslation;
-    } catch (error) {
+    } catch {
       const fallback = this.fixTranslationIssues(this.translateWithDictionary(shortDescription)) + (description.length > 200 ? '...' : '');
       console.log('Description translation fallback:', fallback);
       return fallback;

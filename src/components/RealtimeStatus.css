@@ -1,0 +1,372 @@
+/* リアルタイムステータス コンポーネント */
+.realtime-status {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+}
+
+.status-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.status-icon {
+  font-size: 1.2rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.status-text {
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.status-info {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #666;
+  min-width: 200px;
+}
+
+.last-update {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.toggle-btn {
+  background: #f8f9fa;
+  border: 2px solid #e1e5e9;
+  color: #333;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.toggle-btn:hover {
+  background: #e9ecef;
+  border-color: #667eea;
+}
+
+.toggle-btn.active {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+}
+
+.manual-update-btn,
+.settings-btn {
+  background: #f8f9fa;
+  border: 1px solid #e1e5e9;
+  color: #333;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.manual-update-btn:hover:not(:disabled),
+.settings-btn:hover {
+  background: #e9ecef;
+  border-color: #667eea;
+}
+
+.manual-update-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 設定パネル */
+.settings-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e1e5e9;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  z-index: 1000;
+  min-width: 320px;
+  margin-top: 0.5rem;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e1e5e9;
+}
+
+.settings-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.close-settings {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #666;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.close-settings:hover {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.settings-content {
+  padding: 1.5rem;
+}
+
+.setting-group {
+  margin-bottom: 1.5rem;
+}
+
+.setting-group:last-child {
+  margin-bottom: 0;
+}
+
+.setting-group label {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.5rem;
+  display: block;
+  font-size: 0.9rem;
+}
+
+.setting-group label input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+.frequency-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.frequency-btn {
+  background: #f8f9fa;
+  border: 1px solid #e1e5e9;
+  color: #333;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  flex: 1;
+  min-width: 80px;
+}
+
+.frequency-btn:hover {
+  background: #e9ecef;
+  border-color: #667eea;
+}
+
+.frequency-btn:active {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+}
+
+.test-notification-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  transition: background 0.2s ease;
+}
+
+.test-notification-btn:hover {
+  background: #218838;
+}
+
+.error-info {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  border: 1px solid #f5c6cb;
+}
+
+.retry-info {
+  background: #fff3cd;
+  color: #856404;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  border: 1px solid #ffeaa7;
+  margin-top: 0.5rem;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .realtime-status {
+    padding: 0.75rem;
+  }
+
+  .status-main {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .status-indicator,
+  .status-info {
+    text-align: center;
+  }
+
+  .status-controls {
+    justify-content: center;
+  }
+
+  .settings-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    right: auto;
+    width: 90vw;
+    max-width: 400px;
+    margin-top: 0;
+  }
+
+  .frequency-buttons {
+    flex-direction: column;
+  }
+
+  .frequency-btn {
+    flex: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-content {
+    padding: 1rem;
+  }
+
+  .settings-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .status-controls {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .toggle-btn,
+  .manual-update-btn,
+  .settings-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .manual-update-btn,
+  .settings-btn {
+    height: 44px;
+  }
+}
+
+/* アニメーション効果 */
+.settings-panel {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 接続状態別のスタイル */
+.realtime-status[data-connected="true"] {
+  border-left: 4px solid #28a745;
+}
+
+.realtime-status[data-connected="false"] {
+  border-left: 4px solid #dc3545;
+}
+
+.realtime-status[data-retrying="true"] {
+  border-left: 4px solid #ffc107;
+}
+
+/* フォーカス管理 */
+.toggle-btn:focus,
+.manual-update-btn:focus,
+.settings-btn:focus,
+.frequency-btn:focus,
+.test-notification-btn:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* 高コントラストモード対応 */
+@media (prefers-contrast: high) {
+  .realtime-status {
+    border: 2px solid #000;
+  }
+
+  .status-text,
+  .settings-header h4 {
+    color: #000;
+  }
+
+  .toggle-btn,
+  .manual-update-btn,
+  .settings-btn,
+  .frequency-btn {
+    border: 2px solid #000;
+  }
+}

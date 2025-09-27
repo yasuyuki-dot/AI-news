@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import type { NewsItem } from './types/news';
 import { NEWS_SOURCES } from './types/news';
 import { rssService } from './services/rssService';
-import { storageService } from './services/storageService';
-import { translationService } from './services/translationService';
 import { filterRecentNews, getDateRangeText } from './utils/dateFilter';
 import CategorySection from './components/CategorySection';
 import CategoryAllPage from './components/CategoryAllPage';
@@ -24,7 +22,6 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<PageType>('home');
-  const [savedCount, setSavedCount] = useState(0);
   const [categoryAllState, setCategoryAllState] = useState<CategoryAllState | null>(null);
 
   // カテゴリ設定
@@ -36,7 +33,6 @@ function App() {
 
   useEffect(() => {
     loadNews();
-    updateSavedCount();
 
     // 10分間隔で自動更新
     const interval = setInterval(() => {
@@ -92,10 +88,6 @@ function App() {
     }
   };
 
-  const updateSavedCount = () => {
-    const stats = storageService.getStorageStats();
-    setSavedCount(stats.savedArticlesCount);
-  };
 
   const handleRefresh = () => {
     loadNews();
@@ -104,8 +96,7 @@ function App() {
   const handlePageChange = (page: PageType) => {
     setCurrentPage(page);
     if (page === 'saved') {
-      updateSavedCount();
-    }
+      }
     if (page !== 'category-all') {
       setCategoryAllState(null);
     }

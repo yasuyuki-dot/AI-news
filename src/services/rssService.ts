@@ -142,26 +142,6 @@ class RSSService {
     }
   }
 
-  // 重複記事を除去（軽量版）
-  private removeDuplicates(items: NewsItem[]): NewsItem[] {
-    const seen = new Set<string>();
-    const uniqueItems: NewsItem[] = [];
-
-    for (const item of items) {
-      // シンプルな重複判定：タイトルとリンクの完全一致のみ
-      const titleKey = item.title.toLowerCase().trim();
-      const linkKey = item.link.toLowerCase().trim();
-
-      // 同じタイトルまたは同じリンクは重複とみなす
-      if (!seen.has(titleKey) && !seen.has(linkKey)) {
-        seen.add(titleKey);
-        seen.add(linkKey);
-        uniqueItems.push(item);
-      }
-    }
-
-    return uniqueItems;
-  }
 
   async fetchAllFeeds(sources: NewsSource[]): Promise<NewsItem[]> {
     const promises = sources.map(source => this.fetchRSSFeed(source));
@@ -192,38 +172,6 @@ class RSSService {
     });
   }
 
-  // 経済カテゴリ専用の重複除去（より厳格）
-  private removeEconomicsDuplicates(items: NewsItem[]): NewsItem[] {
-    const economicsItems = items.filter(item => item.category === '経済');
-    const otherItems = items.filter(item => item.category !== '経済');
-
-    if (economicsItems.length === 0) {
-      return items;
-    }
-
-    const uniqueEconomicsItems: NewsItem[] = [];
-    const seen = new Set<string>();
-
-    for (const item of economicsItems) {
-      // より厳格な重複判定：タイトルの類似性も考慮
-      const cleanTitle = item.title.toLowerCase()
-        .replace(/[\s\-_.,!?()\uff08\uff09]/g, '')
-        .trim();
-
-      // 短いタイトル（10文字未満）は完全一致
-      // 長いタイトルは最初の20文字で判定
-      const titleKey = cleanTitle.length < 10 ? cleanTitle : cleanTitle.substring(0, 20);
-      const linkKey = item.link.toLowerCase().trim();
-
-      if (!seen.has(titleKey) && !seen.has(linkKey)) {
-        seen.add(titleKey);
-        seen.add(linkKey);
-        uniqueEconomicsItems.push(item);
-      }
-    }
-
-    return [...otherItems, ...uniqueEconomicsItems];
-  }
 }
 
 export const rssService = new RSSService();

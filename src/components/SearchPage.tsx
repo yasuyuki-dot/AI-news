@@ -3,6 +3,7 @@ import type { NewsItem } from '../types/news';
 import type { SearchFilters } from '../services/searchService';
 import { searchService } from '../services/searchService';
 import { storageService } from '../services/storageService';
+import { filterRecentNews } from '../utils/dateFilter';
 import NewsCard from './NewsCard';
 
 interface SearchPageProps {
@@ -31,7 +32,9 @@ const SearchPage: React.FC<SearchPageProps> = ({ news }) => {
 
     // 検索実行
     const results = searchService.searchNews(news, searchQuery, filters);
-    setSearchResults(results);
+    // 過去2週間以内の記事のみフィルタリング
+    const recentResults = filterRecentNews(results);
+    setSearchResults(recentResults);
 
     // 検索履歴に追加
     storageService.addSearchHistory(searchQuery);

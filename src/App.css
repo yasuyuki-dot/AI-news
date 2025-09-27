@@ -1,16 +1,37 @@
 /* App Layout */
 .app {
   min-height: 100vh;
-  background: #f5f7fa;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background-attachment: fixed;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  color: #e2e8f0;
 }
 
 .app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #06b6d4 100%);
   padding: 1.5rem 2rem;
   text-align: center;
   color: white;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.app-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 10px,
+    rgba(255,255,255,0.05) 10px,
+    rgba(255,255,255,0.05) 20px
+  );
+  pointer-events: none;
 }
 
 .app-header h1 {
@@ -39,6 +60,26 @@
 .news-stats {
   font-size: 0.9rem;
   opacity: 0.8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.date-filter-info {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  color: #06b6d4;
+  font-weight: 500;
+}
+
+.auto-refresh-info {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  color: #c8d9ff;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .refresh-btn {
@@ -1657,6 +1698,7 @@
 .category-経済 { background: linear-gradient(135deg, #28a745, #20c997); }
 .category-国内 { background: linear-gradient(135deg, #007bff, #0056b3); }
 .category-テクノロジー { background: linear-gradient(135deg, #6f42c1, #563d7c); }
+.category-AIエージェント { background: linear-gradient(135deg, #0ea5e9, #3b82f6); }
 .category-その他 { background: linear-gradient(135deg, #6c757d, #5a6268); }
 
 .news-source {
@@ -1678,6 +1720,16 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  position: relative;
+}
+
+.translation-indicator {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  cursor: help;
+  vertical-align: super;
 }
 
 .news-card-description {
@@ -1699,6 +1751,278 @@
   color: #a0aec0;
   border-top: 1px solid #e2e8f0;
   padding-top: 1rem;
+}
+
+/* arXiv論文専用スタイル */
+.arxiv-paper {
+  border-left: 4px solid #3b82f6;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.02) 0%, rgba(147, 197, 253, 0.02) 100%);
+}
+
+.arxiv-paper:hover {
+  border-left-color: #1d4ed8;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 197, 253, 0.05) 100%);
+}
+
+.arxiv-badge {
+  font-size: 0.7rem;
+  padding: 0.3rem 0.6rem;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.category-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.category-icon {
+  font-size: 1rem;
+}
+
+.arxiv-authors, .arxiv-categories {
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  margin: 0.5rem 0;
+  font-size: 0.85rem;
+}
+
+.arxiv-label {
+  font-weight: 600;
+  color: #1d4ed8;
+  margin-right: 0.5rem;
+}
+
+.arxiv-value {
+  color: #374151;
+}
+
+.arxiv-abstract {
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0.8rem 0;
+  font-size: 0.9rem;
+  background: rgba(249, 250, 251, 0.8);
+  padding: 0.8rem;
+  border-radius: 8px;
+  border-left: 3px solid #e5e7eb;
+}
+
+/* 翻訳選択モーダル */
+.translation-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+
+.translation-modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.translation-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.translation-modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.translation-modal-content {
+  padding: 1.5rem;
+}
+
+.article-preview {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.article-title-preview {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.4;
+}
+
+.article-source-preview {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.translation-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.translation-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.translation-option-btn:hover {
+  border-color: #3b82f6;
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.translation-option-btn.original:hover {
+  border-color: #059669;
+  background: #f0fdf4;
+}
+
+.translation-option-btn.translated:hover {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.option-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.option-content {
+  flex: 1;
+}
+
+.option-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.25rem 0;
+}
+
+.option-description {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.no-translation-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.notice-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.modal-footer {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 1rem;
+}
+
+.translation-note {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin: 0;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 640px) {
+  .translation-modal {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+  }
+
+  .translation-modal-header {
+    padding: 1rem;
+  }
+
+  .translation-modal-content {
+    padding: 1rem;
+  }
+
+  .translation-option-btn {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .option-content {
+    text-align: center;
+  }
 }
 
 .news-date {

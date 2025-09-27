@@ -3,6 +3,8 @@ import type { NewsItem } from './types/news';
 import { NEWS_SOURCES } from './types/news';
 import { rssService } from './services/rssService';
 import { storageService } from './services/storageService';
+import { translationService } from './services/translationService';
+import { filterRecentNews, getDateRangeText } from './utils/dateFilter';
 import CategorySection from './components/CategorySection';
 import CategoryAllPage from './components/CategoryAllPage';
 import SearchPage from './components/SearchPage';
@@ -27,16 +29,24 @@ function App() {
 
   // カテゴリ設定
   const categories = [
+    { name: 'AIエージェント', icon: '🤖' },
     { name: '経済', icon: '💰' },
-    { name: '社会', icon: '🏛️' },
-    { name: 'テクノロジー', icon: '💻' },
-    { name: 'スポーツ', icon: '⚽' }
+    { name: 'テクノロジー', icon: '💻' }
   ];
 
   useEffect(() => {
     loadNews();
     updateSavedCount();
-  }, []);
+
+    // 10分間隔で自動更新
+    const interval = setInterval(() => {
+      if (currentPage === 'home') {
+        loadNews();
+      }
+    }, 10 * 60 * 1000); // 10分 = 600,000ミリ秒
+
+    return () => clearInterval(interval);
+  }, [currentPage]);
 
   const loadNews = async () => {
     setLoading(true);
@@ -44,12 +54,35 @@ function App() {
 
     try {
       console.log('Starting to load news...');
+      console.log('NEWS_SOURCES:', NEWS_SOURCES);
+
       const allNews = await rssService.fetchAllFeeds(NEWS_SOURCES);
       console.log('Total news items loaded:', allNews.length);
-      setNews(allNews);
+      console.log('Sample news items:', allNews.slice(0, 3));
+
+      // 過去2週間以内の記事のみフィルタリング
+      const recentNews = filterRecentNews(allNews);
+      console.log('Recent news items (past 2 weeks):', recentNews.length);
+
+      // 翻訳処理を無効化（高速化）
+      console.log('Skipping translation for better performance...');
+      const translatedNews = recentNews;
+
+      console.log('Translation completed. Setting news...');
+      if (allNews.length > 0 && recentNews.length === 0) {
+        console.log('All articles are older than 1 month. Showing all articles for debugging...');
+        const newsToSet = allNews.slice(0, 20);
+        console.log('Setting news with:', newsToSet.length, 'articles');
+        setNews(newsToSet);
+      } else {
+        console.log('Setting news with recent articles:', translatedNews.length);
+        setNews(translatedNews);
+      }
 
       if (allNews.length === 0) {
-        setError('ニュースの取得に失敗しました。しばらく後にお試しください。');
+        setError('ニュースの取得に失敗しました。ネットワーク接続を確認してください。');
+      } else if (recentNews.length === 0 && allNews.length > 0) {
+        setError('過去2週間以内のニュースが見つかりませんでした。(デバッグモード: 全記事を表示中)');
       }
     } catch (error) {
       console.error('ニュースの読み込みに失敗しました:', error);
@@ -121,6 +154,7 @@ function App() {
           />
         );
       default:
+        console.log('Rendering default page. State:', { loading, error: !!error, newsCount: news.length });
         return (
           <>
             {loading && (
@@ -136,25 +170,35 @@ function App() {
               </div>
             )}
 
-            {!loading && !error && news.length > 0 && (
-              <div className="categories-container">
-                {categories.map(category => (
-                  <CategorySection
-                    key={category.name}
-                    category={category.name}
-                    news={getNewsByCategory(category.name)}
-                    icon={category.icon}
-                    onShowAll={handleShowAllCategory}
-                  />
-                ))}
-              </div>
-            )}
+            {!loading && !error && news.length > 0 && (() => {
+              console.log('Rendering categories with news:', news.length);
+              return (
+                <div className="categories-container">
+                  {categories.map(category => {
+                    const categoryNews = getNewsByCategory(category.name);
+                    console.log(`Category ${category.name}: ${categoryNews.length} articles`);
+                    return (
+                      <CategorySection
+                        key={category.name}
+                        category={category.name}
+                        news={categoryNews}
+                        icon={category.icon}
+                        onShowAll={handleShowAllCategory}
+                      />
+                    );
+                  })}
+                </div>
+              );
+            })()}
 
-            {!loading && !error && news.length === 0 && (
-              <div className="empty-state">
-                <p>📰 ニュースが見つかりませんでした</p>
-              </div>
-            )}
+            {!loading && !error && news.length === 0 && (() => {
+              console.log('Showing empty state');
+              return (
+                <div className="empty-state">
+                  <p>📰 ニュースが見つかりませんでした</p>
+                </div>
+              );
+            })()}
           </>
         );
     }
@@ -163,9 +207,9 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>📰 日本ニュース</h1>
+        <h1>🤖 AIエージェント NEWS</h1>
         <div className="app-subtitle">
-          カテゴリ別ニュースフィード
+          最新AI技術・機械学習ニュースフィード
         </div>
 
         {/* ナビゲーション */}
@@ -183,12 +227,6 @@ function App() {
             🔍 検索
           </button>
           <button
-            onClick={() => handlePageChange('saved')}
-            className={`nav-btn ${currentPage === 'saved' ? 'active' : ''}`}
-          >
-            💾 保存記事 {savedCount > 0 && <span className="badge">{savedCount}</span>}
-          </button>
-          <button
             onClick={() => handlePageChange('ranking')}
             className={`nav-btn ${currentPage === 'ranking' ? 'active' : ''}`}
           >
@@ -200,6 +238,8 @@ function App() {
           <div className="header-controls">
             <div className="news-stats">
               {!loading && <span>総計: {getTotalNewsCount()}件</span>}
+              <span className="date-filter-info">📅 過去2週間以内 ({getDateRangeText()})</span>
+              <span className="auto-refresh-info">🔄 10分間隔で自動更新</span>
             </div>
             <button onClick={handleRefresh} className="refresh-btn" disabled={loading}>
               {loading ? '🔄 更新中...' : '🔄 更新'}

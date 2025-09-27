@@ -1,9 +1,9 @@
 {
-  "name": "japanese-news-app",
+  "name": "ai-news",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Japanese news aggregator using RSS feeds from Reuters, NHK, Yahoo News, and Toyo Keizai",
+  "description": "AI News aggregator using RSS feeds from OpenAI, arXiv, Hugging Face, and AI business news",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

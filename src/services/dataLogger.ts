@@ -41,10 +41,10 @@ class DataLogger {
       this.logCurrentState();
     }, this.LOG_INTERVAL);
 
-    // ページ離脱時にも記録
+    // ページ離脱時にも記録（ダウンロードなし）
     window.addEventListener('beforeunload', () => {
       this.logCurrentState();
-      this.saveToFile(true); // 強制保存
+      // 自動ダウンロードは無効化
     });
   }
 
@@ -107,19 +107,9 @@ class DataLogger {
         summary: this.generateSummary()
       }));
 
-      // 3. 自動ダウンロード（本番環境のみ、1時間に1回程度）
-      if (this.isProduction) {
-        const now = new Date();
-        const lastDownload = localStorage.getItem('last_analytics_download');
-        const shouldDownload = force || !lastDownload ||
-          (now.getTime() - new Date(lastDownload).getTime()) > (60 * 60 * 1000); // 1時間
-
-        if (shouldDownload) {
-          this.downloadAnalyticsFile();
-          localStorage.setItem('last_analytics_download', now.toISOString());
-        }
-      } else if (force) {
-        // 開発環境では手動でのみダウンロード実行
+      // 3. 自動ダウンロード無効化（手動のみ）
+      if (force) {
+        // 手動でのみダウンロード実行
         this.downloadAnalyticsFile();
       }
 
@@ -129,6 +119,10 @@ class DataLogger {
   }
 
   private downloadAnalyticsFile(): void {
+    // 全環境でダウンロード無効化（管理者の手動操作のみ有効）
+    console.log('📊 Automatic download disabled - use admin panel for manual export');
+    return;
+
     try {
       const fullData = {
         exported: new Date().toISOString(),
@@ -203,10 +197,8 @@ class DataLogger {
   }
 
   private setupPeriodicSave(): void {
-    // 5分ごとにローカルストレージに保存
-    setInterval(() => {
-      this.saveToFile();
-    }, 5 * 60 * 1000);
+    // 自動保存機能を無効化（手動のみ）
+    console.log('📊 Automatic saving disabled - manual only');
   }
 
   // 手動でデータを取得する関数

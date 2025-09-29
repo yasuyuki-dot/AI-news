@@ -12,11 +12,12 @@ import type { NewsItem } from '../types/news';
 
 class ArxivService {
   private baseUrl = 'http://export.arxiv.org/api/query';
+  private readonly REQUEST_TIMEOUT = 4000; // 4秒タイムアウト
   private proxyUrls = [
-    // allorigins プロキシ
-    (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-    // corsproxy.io プロキシ
-    (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`
+    // corsproxy.io プロキシ（高速優先）
+    (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    // allorigins プロキシ（バックアップ）
+    (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
   ];
 
   async fetchRecentPapers(categories: string[], maxResults: number = 20): Promise<NewsItem[]> {
@@ -29,14 +30,18 @@ class ArxivService {
     for (let i = 0; i < this.proxyUrls.length; i++) {
       try {
         const proxyUrl = this.proxyUrls[i](url);
-        const proxyName = i === 0 ? 'allorigins' : 'corsproxy.io';
+        const proxyName = i === 0 ? 'corsproxy.io' : 'allorigins';
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.REQUEST_TIMEOUT);
 
         const response = await fetch(proxyUrl, {
           method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
           console.warn(`${proxyName}: HTTP error ${response.status}`);
@@ -46,12 +51,12 @@ class ArxivService {
         let xmlContent: string;
 
         if (i === 0) {
+          // corsproxy.io の場合は直接XML
+          xmlContent = await response.text();
+        } else {
           // allorigins の場合は JSON形式
           const data = await response.json();
           xmlContent = data.contents;
-        } else {
-          // corsproxy.io の場合は直接XML
-          xmlContent = await response.text();
         }
 
         const papers = this.parseArxivXML(xmlContent);
@@ -61,7 +66,7 @@ class ArxivService {
           return papers;
         }
       } catch (error) {
-        const proxyName = i === 0 ? 'allorigins' : 'corsproxy.io';
+        const proxyName = i === 0 ? 'corsproxy.io' : 'allorigins';
         console.warn(`${proxyName} failed for arXiv:`, error);
       }
     }
@@ -168,7 +173,7 @@ class ArxivService {
     // arXivカテゴリをアプリのカテゴリにマップ
     for (const cat of categories) {
       if (cat.includes('cs.AI') || cat.includes('cs.LG') || cat.includes('cs.CL')) {
-        return 'AIエージェント';
+        return 'AI・機械学習';
       }
       if (cat.includes('cs.') || cat.includes('stat.ML')) {
         return 'テクノロジー';

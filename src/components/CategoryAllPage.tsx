@@ -3,6 +3,7 @@ import type { NewsItem } from '../types/news';
 import NewsCard from './NewsCard';
 import VirtualizedNewsList from './VirtualizedNewsList';
 import { performanceService } from '../services/performanceService';
+import { analyticsTrackingService } from '../services/analyticsTrackingService';
 
 interface CategoryAllPageProps {
   category: string;
@@ -34,6 +35,11 @@ const CategoryAllPage: React.FC<CategoryAllPageProps> = ({
       return () => performanceService.stopMonitoring();
     }
   }, [showMetrics]);
+
+  // カテゴリ表示のアナリティクス追跡
+  useEffect(() => {
+    analyticsTrackingService.trackCategoryView(category, news.length);
+  }, [category, news.length]);
 
   // 記事のソート処理
   const getSortedNews = () => {

@@ -3,6 +3,7 @@ import type { NewsItem } from '../types/news';
 import type { SearchFilters } from '../services/searchService';
 import { searchService } from '../services/searchService';
 import { storageService } from '../services/storageService';
+import { analyticsTrackingService } from '../services/analyticsTrackingService';
 import { filterRecentNews } from '../utils/dateFilter';
 import NewsCard from './NewsCard';
 
@@ -39,6 +40,9 @@ const SearchPage: React.FC<SearchPageProps> = ({ news }) => {
     // 検索履歴に追加
     storageService.addSearchHistory(searchQuery);
     setSearchHistory(storageService.getSearchHistory());
+
+    // アナリティクス記録
+    analyticsTrackingService.trackSearch(searchQuery, recentResults.length, filters);
 
     setIsSearching(false);
   };

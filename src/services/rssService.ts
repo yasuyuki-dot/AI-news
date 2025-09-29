@@ -3,39 +3,74 @@ import { arxivService } from './arxivService';
 
 class RSSService {
   private parser = new DOMParser();
+  private cache = new Map<string, { data: NewsItem[], timestamp: number }>();
+  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5分間キャッシュ
+  private readonly REQUEST_TIMEOUT = 4000; // 4秒タイムアウト（高速化）
   private proxyUrls = [
-    // プライマリプロキシ (allorigins)
-    (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-    // バックアップ プロキシ (corsproxy.io)
+    // プライマリプロキシ (corsproxy.io) - 最も高速
     (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    // 追加プロキシ (thingproxy)
-    (url: string) => `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(url)}`,
-    // 追加プロキシ (jsonp)
-    (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+    // バックアップ プロキシ (allorigins) - 安定
+    (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
   ];
 
+  // キャッシュチェック
+  private getCachedData(key: string): NewsItem[] | null {
+    const cached = this.cache.get(key);
+    if (cached && (Date.now() - cached.timestamp) < this.CACHE_DURATION) {
+      return cached.data;
+    }
+    return null;
+  }
+
+  // キャッシュ保存
+  private setCachedData(key: string, data: NewsItem[]): void {
+    this.cache.set(key, { data, timestamp: Date.now() });
+  }
+
+  // タイムアウト付きfetch
+  private async fetchWithTimeout(url: string, timeout: number): Promise<Response> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  }
+
   async fetchRSSFeed(source: NewsSource): Promise<NewsItem[]> {
-    console.log(`Fetching RSS from ${source.name}...`);
+    // キャッシュチェック
+    const cachedData = this.getCachedData(source.url);
+    if (cachedData) {
+      console.log(`📦 ${source.name}: キャッシュから取得 (${cachedData.length}件)`);
+      return cachedData;
+    }
+
+    console.log(`🔄 ${source.name}: 新規取得中...`);
 
     // arXiv API専用処理
     if (source.url === 'ARXIV_API_SOURCE') {
-      console.log('Using arXiv API instead of RSS...');
-      return await arxivService.fetchRecentPapers(arxivService.getAICategories(), 15);
+      const data = await arxivService.fetchRecentPapers(arxivService.getAICategories(), 15);
+      this.setCachedData(source.url, data);
+      return data;
     }
 
-    // 複数プロキシでフォールバック試行
+    // 複数プロキシでフォールバック試行（高速化）
     for (let i = 0; i < this.proxyUrls.length; i++) {
       try {
         const proxyUrl = this.proxyUrls[i](source.url);
-        const proxyNames = ['allorigins', 'corsproxy.io', 'thingproxy', 'codetabs'];
+        const proxyNames = ['corsproxy.io', 'allorigins'];
         const proxyName = proxyNames[i] || `proxy-${i}`;
 
-        const response = await fetch(proxyUrl, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
+        const response = await this.fetchWithTimeout(proxyUrl, this.REQUEST_TIMEOUT);
 
         if (!response.ok) {
           if (response.status === 429) {
@@ -47,22 +82,14 @@ class RSSService {
 
         let xmlContent: string;
 
-        // プロキシ別のレスポンス処理
+        // プロキシ別のレスポンス処理（簡素化）
         if (i === 0) {
+          // corsproxy.io は直接XML
+          xmlContent = await response.text();
+        } else {
           // allorigins の場合は JSON形式
           const data = await response.json();
           xmlContent = data.contents;
-        } else if (i === 3) {
-          // codetabs の場合も JSON形式の可能性
-          try {
-            const data = await response.json();
-            xmlContent = data.content || data.contents || await response.text();
-          } catch {
-            xmlContent = await response.text();
-          }
-        } else {
-          // その他のプロキシは直接XML
-          xmlContent = await response.text();
         }
 
         const xmlDoc = this.parser.parseFromString(xmlContent, 'text/xml');
@@ -70,10 +97,11 @@ class RSSService {
 
         if (items.length > 0) {
           console.log(`✅ ${source.name}: ${items.length}件取得 (${proxyName})`);
+          this.setCachedData(source.url, items); // キャッシュに保存
           return items;
         }
       } catch (error) {
-        const proxyNames = ['allorigins', 'corsproxy.io', 'thingproxy', 'codetabs'];
+        const proxyNames = ['corsproxy.io', 'allorigins'];
         const proxyName = proxyNames[i] || `proxy-${i}`;
         console.warn(`${proxyName} failed for ${source.name}:`, error);
 
@@ -144,6 +172,10 @@ class RSSService {
 
 
   async fetchAllFeeds(sources: NewsSource[]): Promise<NewsItem[]> {
+    console.log(`🚀 RSS取得開始: ${sources.length}ソースを並列処理中...`);
+    const startTime = Date.now();
+
+    // 高速並列処理 - すべて同時実行
     const promises = sources.map(source => this.fetchRSSFeed(source));
     const results = await Promise.allSettled(promises);
 
@@ -162,7 +194,9 @@ class RSSService {
       }
     });
 
-    console.log(`📊 RSS取得結果: 成功 ${successCount}/${sources.length} ソース, ${failCount}ソースは「ただいま表示できません」`);
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+    console.log(`📊 RSS取得完了: ${duration}ms - 成功 ${successCount}/${sources.length}ソース (失敗 ${failCount}ソース)`);
 
     // 日付順でソート（新しい順）
     return allItems.sort((a, b) => {

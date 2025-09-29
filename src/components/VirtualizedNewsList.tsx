@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useVirtualScroll, useVirtualScrollPerformance } from '../hooks/useVirtualScroll';
+import { analyticsTrackingService } from '../services/analyticsTrackingService';
 import NewsCard from './NewsCard';
 import type { NewsItem } from '../types/news';
 import './VirtualizedNewsList.css';
@@ -110,6 +111,16 @@ const VirtualizedNewsList: React.FC<VirtualizedNewsListProps> = ({
       recordRender(virtualItems.length, news.length, renderTime);
     }
   }, [virtualItems.length, news.length, showPerformanceMetrics, recordRender]);
+
+  // 仮想スクロール機能使用のアナリティクス追跡
+  useEffect(() => {
+    analyticsTrackingService.trackVirtualScrollFeature('enable', {
+      totalItems: news.length,
+      visibleItems: virtualItems.length,
+      containerHeight,
+      itemHeight
+    });
+  }, [news.length, virtualItems.length, containerHeight, itemHeight]);
 
   // アイテム測定用の ref コールバック
   const getItemRef = useCallback((index: number) => (element: HTMLDivElement | null) => {

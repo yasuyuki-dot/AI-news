@@ -95,7 +95,7 @@ class TranslationService {
     }
   }
 
-  // ローカル辞書による簡易翻訳（拡張版）
+  // ローカル辞書による簡易翻訳（大幅拡張版）
   private translateWithDictionary(text: string): string {
     const aiTerms: Record<string, string> = {
       // AI・機械学習用語
@@ -105,14 +105,54 @@ class TranslationService {
       'neural network': 'ニューラルネットワーク',
       'large language model': '大規模言語モデル',
       'language model': '言語モデル',
-      'LLM': 'LLM',
-      'LLMs': 'LLM',
-      'GPT': 'GPT',
-      'ChatGPT': 'ChatGPT',
+      'transformers': 'Transformer',
+      'transformer': 'Transformer',
+      'swift transformers': 'Swift Transformers',
+      'reasoning': '推論',
+      'scientific reasoning': '科学的推論',
+      'scireasoner': 'SciReasoner',
+      'smol2operator': 'Smol2Operator',
+      'post-training': 'ポストトレーニング',
+      'gui agents': 'GUIエージェント',
+      'computer use': 'コンピュータ利用',
+
+      // 企業・製品名
       'OpenAI': 'OpenAI',
+      'ChatGPT': 'ChatGPT',
+      'ChatGPT Pulse': 'ChatGPT Pulse',
       'Google': 'Google',
       'Meta': 'Meta',
       'Anthropic': 'Anthropic',
+      'NVIDIA': 'NVIDIA',
+      'SAP': 'SAP',
+      'Oracle': 'Oracle',
+      'SoftBank': 'ソフトバンク',
+      'Hugging Face': 'Hugging Face',
+      'AARP': 'AARP',
+      'Stargate': 'Stargate',
+
+      // 基本用語・略語
+      'LLM': 'LLM',
+      'LLMs': 'LLM',
+      'GPT': 'GPT',
+      'AI': 'AI',
+      'DL': '深層学習',
+      'ML': '機械学習',
+      'NLP': '自然言語処理',
+      'CV': 'コンピュータビジョン',
+
+      // 物理学・科学用語
+      'physics': '物理学',
+      'Physics': '物理学',
+      'toward physics': '物理学への応用',
+      'Toward Physics': '物理学への応用',
+      'brains': '脳科学',
+      'Brains': '脳科学',
+      'brain': '脳',
+      'Brain': '脳',
+      'neuroscience': '神経科学',
+      'Neuroscience': '神経科学',
+      'API': 'API',
       'algorithm': 'アルゴリズム',
       'model': 'モデル',
       'models': 'モデル',
@@ -130,34 +170,118 @@ class TranslationService {
       'technology': 'テクノロジー',
       'innovation': 'イノベーション',
       'development': '開発',
+      'manufacturing': '製造業',
+      'industry': '業界',
 
-      // 一般的な動詞・形容詞
-      'achieve': '達成する',
-      'strong': '強力な',
-      'traditional': '従来の',
+      // ビジネス・投資用語
+      'partner': 'パートナー',
+      'partnering': '提携',
+      'partnership': 'パートナーシップ',
+      'investment': '投資',
+      'invest': '投資する',
+      'funding': '資金調達',
+      'billion': '億',
+      'trillion': '兆',
+      'dollar': 'ドル',
+      'dollars': 'ドル',
+      'market': '市場',
+      'expansion': '拡大',
+      'expand': '拡大する',
+      'infrastructure': 'インフラ',
+      'data center': 'データセンター',
+      'data centers': 'データセンター',
+      'datacenter': 'データセンター',
+      'datacenters': 'データセンター',
+
+      // 動詞・形容詞
+      'introduce': '導入する',
+      'introducing': '導入',
+      'launch': 'ローンチ',
+      'launching': 'ローンチ',
+      'transform': '変革する',
+      'transforming': '変革',
+      'measure': '測定する',
+      'measuring': '測定',
+      'reach': '到達する',
+      'reaches': '到達',
+      'help': '支援する',
+      'helping': '支援',
+      'work': '作業する',
+      'working': '作業',
+      'team': 'チーム',
+      'teams': 'チーム',
+      'tools': 'ツール',
+      'tool': 'ツール',
+      'ways': '方法',
+      'way': '方法',
+      'more': 'より多くの',
       'new': '新しい',
       'latest': '最新の',
-      'help': '支援する',
-      'stay': '維持する',
+      'real-world': '実世界の',
+      'real world': '実世界',
+      'strong': '強力な',
+      'powerful': '強力な',
+      'advanced': '高度な',
+      'traditional': '従来の',
+      'sovereign': 'ソブリン',
       'safe': '安全な',
+      'safety': '安全',
       'online': 'オンライン',
-      'with': 'と',
-      'and': 'と',
-      'are': 'は',
-      'is': 'は',
-      'to': 'に',
-      'for': 'のために',
-      'partnering': '提携している',
-      'adults': '大人',
       'older': '高齢の',
-      'tools': 'ツール',
-      'scam-spotting': '詐欺発見',
+      'adults': '大人',
+      'keep': '保つ',
+      'stay': '維持する',
       'spotting': '発見',
       'scam': '詐欺',
+      'scam-spotting': '詐欺発見',
 
-      // 頻出単語
-      'AI': 'AI',
-      'AARP': 'AARP'
+      // 技術用語
+      'computer': 'コンピュータ',
+      'software': 'ソフトウェア',
+      'hardware': 'ハードウェア',
+      'platform': 'プラットフォーム',
+      'system': 'システム',
+      'service': 'サービス',
+      'application': 'アプリケーション',
+      'framework': 'フレームワーク',
+      'interface': 'インターフェース',
+      'network': 'ネットワーク',
+      'cloud': 'クラウド',
+      'server': 'サーバー',
+      'database': 'データベース',
+      'security': 'セキュリティ',
+      'privacy': 'プライバシー',
+
+      // 前置詞・接続詞・冠詞
+      'with': 'と',
+      'and': 'と',
+      'to': 'に',
+      'for': 'のために',
+      'in': 'で',
+      'on': 'で',
+      'at': 'で',
+      'by': 'によって',
+      'of': 'の',
+      'the': '',
+      'a': '',
+      'an': '',
+      'is': 'は',
+      'are': 'は',
+      'was': 'だった',
+      'were': 'だった',
+      'be': 'である',
+      'been': 'された',
+      'have': '持つ',
+      'has': '持つ',
+      'had': '持った',
+      'will': 'する予定',
+      'would': 'するだろう',
+      'can': 'できる',
+      'could': 'できた',
+      'should': 'すべき',
+      'must': 'しなければならない',
+      'may': 'かもしれない',
+      'might': 'かもしれない'
     };
 
     let translatedText = text;
@@ -184,6 +308,18 @@ class TranslationService {
       // 句読点前後のスペース調整
       .replace(/([。、])\s+/g, '$1')
       .replace(/\s+([。、])/g, '$1')
+      // 不自然な混在表現を修正
+      .replace(/([ァ-ヾあ-ん一-龯]+)のDL([^a-zA-Z]|$)/g, '$1における深層学習$2')
+      .replace(/([ァ-ヾあ-ん一-龯]+)のML([^a-zA-Z]|$)/g, '$1における機械学習$2')
+      .replace(/([ァ-ヾあ-ん一-龯]+)のAI([^a-zA-Z]|$)/g, '$1におけるAI$2')
+      .replace(/([ァ-ヾあ-ん一-龯]+)のNLP([^a-zA-Z]|$)/g, '$1における自然言語処理$2')
+      .replace(/([ァ-ヾあ-ん一-龯]+)のCV([^a-zA-Z]|$)/g, '$1におけるコンピュータビジョン$2')
+      .replace(/Toward\s*([ァ-ヾあ-ん一-龯]+)/g, '$1への応用')
+      .replace(/toward\s*([ァ-ヾあ-ん一-龯]+)/g, '$1への応用')
+      .replace(/([ァ-ヾあ-ん一-龯]+)とBrains/g, '$1と脳科学')
+      .replace(/([ァ-ヾあ-ん一-龯]+)とbrains/g, '$1と脳科学')
+      .replace(/DLと([ァ-ヾあ-ん一-龯]+)/g, '深層学習と$1')
+      .replace(/MLと([ァ-ヾあ-ん一-龯]+)/g, '機械学習と$1')
       // 連続スペースを1つに
       .replace(/\s{2,}/g, ' ')
       // 行頭・行末のスペース除去
@@ -220,7 +356,7 @@ class TranslationService {
     return commonWords[word.toLowerCase()] || word;
   }
 
-  // タイトルを翻訳
+  // タイトルを翻訳（Google翻訳優先版）
   async translateTitle(title: string): Promise<string> {
     if (!this.isEnglish(title)) {
       return title; // 既に日本語の場合はそのまま返す
@@ -233,27 +369,27 @@ class TranslationService {
 
     try {
       // まずGoogle翻訳を試行
-      const translated = await this.translateWithGoogle(title);
-
-      // 翻訳が成功した場合（元のテキストと異なる場合）
-      if (translated !== title) {
-        const fixedTranslation = this.fixTranslationIssues(translated);
+      const googleTranslated = await this.translateWithGoogle(title);
+      if (googleTranslated !== title && googleTranslated.length > 5) {
+        // Google翻訳が成功した場合
+        const fixedTranslation = this.fixTranslationIssues(googleTranslated);
         this.translatedCache.set(title, fixedTranslation);
+        console.log(`Google翻訳成功: ${title} → ${fixedTranslation}`);
         return fixedTranslation;
       }
-
-      // Google翻訳が失敗した場合は辞書翻訳
-      const dictionaryTranslated = this.translateWithDictionary(title);
-      const fixedDictionary = this.fixTranslationIssues(dictionaryTranslated);
-      this.translatedCache.set(title, fixedDictionary);
-      return fixedDictionary;
-
     } catch (error) {
-      console.warn('タイトル翻訳エラー:', error);
-      // エラー時は辞書翻訳にフォールバック
-      const fallbackTranslation = this.translateWithDictionary(title);
-      return this.fixTranslationIssues(fallbackTranslation);
+      console.warn(`Google翻訳失敗 (${title}):`, error);
     }
+
+    // Google翻訳が失敗した場合は辞書翻訳をフォールバック
+    console.log(`辞書翻訳を使用: ${title}`);
+    const dictionaryTranslated = this.translateWithDictionary(title);
+    const fixedTranslation = this.fixTranslationIssues(dictionaryTranslated);
+
+    // キャッシュに保存
+    this.translatedCache.set(title, fixedTranslation);
+
+    return fixedTranslation;
   }
 
   // 説明文を翻訳（強化版）
@@ -351,37 +487,39 @@ class TranslationService {
     };
   }
 
-  // バッチ翻訳（レート制限対応・強化版）
+  // バッチ翻訳（Google翻訳使用版）
   async translateNewsItems(newsItems: NewsItem[]): Promise<NewsItem[]> {
-    console.log(`Starting batch translation for ${newsItems.length} news items...`);
-    const translatedItems: NewsItem[] = [];
+    console.log(`🔤 Google翻訳バッチ処理開始: ${newsItems.length}件`);
+    const startTime = Date.now();
 
-    for (let i = 0; i < newsItems.length; i++) {
+    // 並列処理でGoogle翻訳を実行（レート制限対応）
+    const translatePromises = newsItems.map(async (item, index) => {
       try {
-        console.log(`Translating item ${i + 1}/${newsItems.length}: ${newsItems[i].title.substring(0, 50)}...`);
+        // 少し間隔を開けてレート制限を回避
+        await new Promise(resolve => setTimeout(resolve, index * 50));
 
-        const translatedItem = await this.translateNewsItem(newsItems[i]);
-        translatedItems.push(translatedItem);
-
-        // 翻訳結果をログ出力
-        if (translatedItem.title !== newsItems[i].title) {
-          console.log(`Translation applied for item ${i + 1}`);
-        }
-
-        // レート制限対応：100件ごとに1秒待機（高速化）
-        if (i > 0 && i % 100 === 0) {
-          console.log(`Rate limiting: waiting 1 second after ${i + 1} items...`);
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
+        const translatedTitle = await this.translateTitle(item.title);
+        return {
+          ...item,
+          title: translatedTitle,
+          originalTitle: item.title !== translatedTitle ? item.title : undefined
+        };
       } catch (error) {
-        console.warn(`翻訳エラー (記事${i + 1}):`, error);
-        translatedItems.push(newsItems[i]); // エラー時は元の記事を使用
+        console.warn(`翻訳エラー (記事${index + 1}):`, error);
+        return item; // エラー時は元の記事を使用
       }
-    }
+    });
 
-    console.log(`Batch translation completed. Processed ${translatedItems.length} items.`);
+    const translatedItems = await Promise.all(translatePromises);
+
+    const endTime = Date.now();
+    const translationTime = endTime - startTime;
+    const translatedCount = translatedItems.filter(item => item.originalTitle).length;
+
+    console.log(`✅ 高速翻訳完了: ${translationTime}ms - ${translatedCount}/${newsItems.length}件を翻訳`);
     return translatedItems;
   }
+
 
   // キャッシュクリア
   clearCache(): void {

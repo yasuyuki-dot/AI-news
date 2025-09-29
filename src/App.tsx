@@ -3,6 +3,9 @@ import type { NewsItem } from './types/news';
 import { NEWS_SOURCES } from './types/news';
 import { rssService } from './services/rssService';
 import { realtimeService, type RealtimeEvent } from './services/realtimeService';
+import { analyticsTrackingService } from './services/analyticsTrackingService';
+import { translationService } from './services/translationService';
+import './services/dataLogger'; // データロガーを初期化
 import { filterRecentNews, getDateRangeText } from './utils/dateFilter';
 import CategorySection from './components/CategorySection';
 import CategoryAllPage from './components/CategoryAllPage';
@@ -10,6 +13,7 @@ import SearchPage from './components/SearchPage';
 import SavedPage from './components/SavedPage';
 import SourceRanking from './components/SourceRanking';
 import RealtimeStatus from './components/RealtimeStatus';
+import AdminAccess from './components/AdminAccess';
 import './App.css';
 
 type PageType = 'home' | 'search' | 'saved' | 'category-all' | 'ranking';
@@ -26,15 +30,66 @@ function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('home');
   const [categoryAllState, setCategoryAllState] = useState<CategoryAllState | null>(null);
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
+  const [showAdminAccess, setShowAdminAccess] = useState(false);
+  const [isTranslated, setIsTranslated] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [originalNews, setOriginalNews] = useState<NewsItem[]>([]);
 
   // カテゴリ設定
   const categories = [
-    { name: 'AIエージェント', icon: '🤖' },
-    { name: '経済', icon: '💰' },
+    { name: 'AI・機械学習', icon: '🤖' },
+    { name: '経済・ビジネス', icon: '💰' },
     { name: 'テクノロジー', icon: '💻' }
   ];
 
+  // 管理者アクセスショートカット設定 ("yasuyuki" 入力のみ)
   useEffect(() => {
+    let keySequence = '';
+    let sequenceTimer: number;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // 特別なシーケンス: "yasuyuki" を連続入力
+      if (!event.ctrlKey && !event.altKey && !event.metaKey && !event.shiftKey) {
+        keySequence += event.key.toLowerCase();
+        console.log('🔑 Key pressed:', event.key, 'Current sequence:', keySequence);
+
+        // 3秒後にシーケンスをリセット
+        clearTimeout(sequenceTimer);
+        sequenceTimer = setTimeout(() => {
+          console.log('⏰ Sequence reset after timeout');
+          keySequence = '';
+        }, 3000);
+
+        // "yasuyuki" が入力されたらアクセス許可
+        if (keySequence.includes('yasuyuki')) {
+          console.log('🔓 Secret code detected! Opening admin access...');
+          event.preventDefault();
+          keySequence = '';
+          setShowAdminAccess(true);
+        }
+
+        // シーケンスが長すぎる場合はリセット
+        if (keySequence.length > 20) {
+          console.log('📏 Sequence too long, resetting...');
+          keySequence = '';
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(sequenceTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    // アナリティクス初期化
+    analyticsTrackingService.trackPageView('home');
+
+    // データロガー初期化（自動でバックグラウンド記録開始）
+    console.log('📊 Data logger initialized - automatic analytics recording started');
+
     loadNews();
 
     // リアルタイムサービスのイベントリスナー設定
@@ -56,39 +111,44 @@ function App() {
     };
   }, [currentPage]);
 
+  // ページ変更時のアナリティクス追跡
+  useEffect(() => {
+    analyticsTrackingService.trackPageView(currentPage);
+  }, [currentPage]);
+
   const loadNews = async () => {
     setLoading(true);
     setError('');
 
     try {
-      console.log('Starting to load news...');
-      console.log('NEWS_SOURCES:', NEWS_SOURCES);
+      console.log(`🚀 ニュース読み込み開始 (${NEWS_SOURCES.length}ソース)`);
+      const startTime = Date.now();
 
       const allNews = await rssService.fetchAllFeeds(NEWS_SOURCES);
-      console.log('Total news items loaded:', allNews.length);
-      console.log('Sample news items:', allNews.slice(0, 3));
+      const loadTime = Date.now() - startTime;
+      console.log(`✅ ニュース読み込み完了: ${loadTime}ms - ${allNews.length}件取得`);
 
       // 過去2週間以内の記事のみフィルタリング
       const recentNews = filterRecentNews(allNews);
-      console.log('Recent news items (past 2 weeks):', recentNews.length);
+      console.log(`📅 最近のニュース: ${recentNews.length}件 (全${allNews.length}件中)`);
 
-      // 翻訳処理を無効化（高速化）
-      console.log('Skipping translation for better performance...');
-      const translatedNews = recentNews;
-
-      console.log('Translation completed. Setting news...');
+      // ニュースをそのまま表示（翻訳なし）
       if (allNews.length > 0 && recentNews.length === 0) {
-        console.log('All articles are older than 1 month. Showing all articles for debugging...');
-        const newsToSet = allNews.slice(0, 20);
-        console.log('Setting news with:', newsToSet.length, 'articles');
-        setNews(newsToSet);
+        console.log('📰 過去2週間以内のニュースなし。全記事の最新20件を表示（デバッグ）');
+        const oldNews = allNews.slice(0, 20);
+        setOriginalNews(oldNews);
+        setNews(oldNews);
       } else {
-        console.log('Setting news with recent articles:', translatedNews.length);
-        setNews(translatedNews);
+        console.log(`📰 ニュースを表示: ${recentNews.length}件`);
+        setOriginalNews(recentNews);
+        setNews(recentNews);
       }
 
+      // 翻訳状態をリセット
+      setIsTranslated(false);
+
       if (allNews.length === 0) {
-        setError('ニュースの取得に失敗しました。ネットワーク接続を確認してください。');
+        setError('ニュースの取得に失敗しました。インターネット接続をご確認ください。');
       } else if (recentNews.length === 0 && allNews.length > 0) {
         setError('過去2週間以内のニュースが見つかりませんでした。(デバッグモード: 全記事を表示中)');
       }
@@ -111,12 +171,44 @@ function App() {
     }
   };
 
+  // 翻訳トグル機能
+  const handleTranslationToggle = async () => {
+    if (isTranslating) return; // 翻訳中は無効
+
+    setIsTranslating(true);
+
+    try {
+      if (isTranslated) {
+        // 翻訳を解除：オリジナルに戻す
+        console.log('🔤 翻訳を解除中...');
+        setNews(originalNews);
+        setIsTranslated(false);
+        console.log('✅ オリジナル表示に戻しました');
+      } else {
+        // 翻訳を実行
+        console.log('🔤 ニュースタイトルを日本語に翻訳中...');
+        const translationStartTime = Date.now();
+        const translatedNews = await translationService.translateNewsItems(originalNews);
+        const translationTime = Date.now() - translationStartTime;
+        console.log(`✅ 翻訳完了: ${translationTime}ms`);
+        setNews(translatedNews);
+        setIsTranslated(true);
+      }
+    } catch (error) {
+      console.error('翻訳エラー:', error);
+      setError('翻訳に失敗しました: ' + (error instanceof Error ? error.message : String(error)));
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
   const handlePageChange = (page: PageType) => {
     setCurrentPage(page);
     if (page !== 'category-all') {
       setCategoryAllState(null);
     }
   };
+
 
   const handleShowAllCategory = (categoryName: string) => {
     const category = categories.find(cat => cat.name === categoryName);
@@ -167,7 +259,7 @@ function App() {
             {loading && (
               <div className="loading-section">
                 <div className="loading-spinner">🔄</div>
-                <p>ニュースを読み込み中...</p>
+                <p>最新ニュースを取得中...</p>
               </div>
             )}
 
@@ -214,9 +306,9 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>🤖 AIエージェント NEWS</h1>
+        <h1>🤖 AI ニュース</h1>
         <div className="app-subtitle">
-          最新AI技術・機械学習ニュースフィード
+          最新AI技術・機械学習の情報をお届け
         </div>
 
         {/* ナビゲーション */}
@@ -247,14 +339,26 @@ function App() {
               {!loading && <span>総計: {getTotalNewsCount()}件</span>}
               <span className="date-filter-info">📅 過去2週間以内 ({getDateRangeText()})</span>
               {!isRealtimeConnected && (
-                <span className="auto-refresh-info">🔄 手動更新モード</span>
+                <span className="auto-refresh-info">🔄 手動更新</span>
+              )}
+              {isTranslated && (
+                <span className="translation-info">🌐 翻訳表示中</span>
               )}
             </div>
             <button onClick={handleRefresh} className="refresh-btn" disabled={loading}>
               {loading ? '🔄 更新中...' : '🔄 更新'}
             </button>
+            <button
+              onClick={handleTranslationToggle}
+              className="translation-btn"
+              disabled={isTranslating || loading || news.length === 0}
+              title={isTranslated ? '英語表示に戻す' : '日本語に翻訳'}
+            >
+              {isTranslating ? '🔄 翻訳中...' : isTranslated ? '🌐 EN' : '🌐 JP'}
+            </button>
           </div>
         )}
+
       </header>
 
       <main className="app-main">
@@ -263,6 +367,10 @@ function App() {
         )}
         {renderPage()}
       </main>
+
+      {/* 管理者アクセス - 隠し機能 */}
+      {showAdminAccess && <AdminAccess onClose={() => setShowAdminAccess(false)} />}
+
     </div>
   );
 }

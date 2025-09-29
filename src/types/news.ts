@@ -20,21 +20,21 @@ export const NEWS_SOURCES: NewsSource[] = [
   {
     name: 'OpenAI News',
     url: 'https://openai.com/news/rss.xml',
-    category: 'AIエージェント'
+    category: 'AI・機械学習'
   },
   {
     name: 'arXiv AI Papers (API)',
     url: 'ARXIV_API_SOURCE',
-    category: 'AIエージェント'
+    category: 'AI・機械学習'
   },
   {
     name: 'AI Business News',
     url: 'https://news.google.com/rss/search?q=OpenAI+ChatGPT+AI+投資&hl=ja&gl=JP&ceid=JP:ja',
-    category: '経済'
+    category: '経済・ビジネス'
   },
   {
     name: 'Hugging Face Blog',
     url: 'https://huggingface.co/blog/feed.xml',
-    category: 'AIエージェント'
+    category: 'AI・機械学習'
   }
 ];

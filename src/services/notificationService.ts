@@ -24,7 +24,7 @@ class NotificationService {
   private permission: NotificationPermission = 'default';
   private settings: NotificationSettings = {
     enabled: false,
-    categories: ['AIエージェント'],
+    categories: ['AI・機械学習'],
     keywords: ['ChatGPT', 'OpenAI', 'AI', '人工知能', 'GPT'],
     soundEnabled: true,
     showOnlyWhenInactive: true,

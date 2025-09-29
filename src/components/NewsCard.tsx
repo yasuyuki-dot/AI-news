@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { NewsItem } from '../types/news';
 import { storageService } from '../services/storageService';
-import { analyticsService } from '../services/analyticsService';
+import { analyticsTrackingService } from '../services/analyticsTrackingService';
 import { getDisplayTitle } from '../utils/titleSummarizer';
 import TranslationModal from './TranslationModal';
 
@@ -78,12 +78,13 @@ const NewsCard: React.FC<NewsCardProps> = ({
   };
 
   const handleClick = () => {
-    // アクセス記録
-    analyticsService.recordAccess(
-      newsItem.source,
-      newsItem.title,
-      newsItem.category
-    );
+    // アナリティクス記録
+    analyticsTrackingService.trackArticleClick({
+      title: newsItem.title,
+      source: newsItem.source,
+      category: newsItem.category,
+      link: newsItem.link
+    });
 
     // 翻訳がある場合はモーダルを表示、ない場合は直接開く
     if (newsItem.originalTitle || newsItem.originalDescription) {
@@ -142,8 +143,8 @@ const NewsCard: React.FC<NewsCardProps> = ({
 
   const getCategoryIcon = (category?: string): string => {
     switch (category) {
-      case 'AIエージェント': return '🤖';
-      case '経済': return '💰';
+      case 'AI・機械学習': return '🤖';
+      case '経済・ビジネス': return '💰';
       case 'テクノロジー': return '💻';
       case '社会': return '🏛️';
       case 'スポーツ': return '⚽';

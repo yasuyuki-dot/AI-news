@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { realtimeService, type ConnectionStatus, type RealtimeEvent } from '../services/realtimeService';
 import { notificationService } from '../services/notificationService';
+import { analyticsTrackingService } from '../services/analyticsTrackingService';
 import './RealtimeStatus.css';
 
 interface RealtimeStatusProps {
@@ -54,13 +55,16 @@ const RealtimeStatus: React.FC<RealtimeStatusProps> = ({ onStatusChange }) => {
   const handleToggleRealtime = () => {
     if (connectionStatus.connected) {
       realtimeService.stopRealtimeUpdates();
+      analyticsTrackingService.trackRealtimeFeature('stop');
     } else {
       realtimeService.startRealtimeUpdates();
+      analyticsTrackingService.trackRealtimeFeature('start');
     }
   };
 
   const handleFrequencyChange = (frequency: 'high' | 'normal' | 'low') => {
     realtimeService.setUpdateFrequency(frequency);
+    analyticsTrackingService.trackRealtimeFeature('frequency_change', { frequency });
   };
 
   const handleManualUpdate = async () => {
@@ -74,8 +78,10 @@ const RealtimeStatus: React.FC<RealtimeStatusProps> = ({ onStatusChange }) => {
   const handleNotificationToggle = async () => {
     if (notificationSettings.enabled) {
       notificationService.disable();
+      analyticsTrackingService.trackNotificationFeature('disable');
     } else {
       const granted = await notificationService.requestPermission();
+      analyticsTrackingService.trackNotificationFeature(granted ? 'permission_granted' : 'permission_denied');
       if (granted) {
         notificationService.updateSettings({ enabled: true });
       }
